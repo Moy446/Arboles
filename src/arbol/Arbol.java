@@ -5,13 +5,13 @@ public class Arbol {
 
     int value;
     Arbol left;
-    Arbol rigth;
+    Arbol right;
+    int color ; //1 = red, 0 = black
     
-    String levels[];
-    
-    public Arbol(int value) {
+    public Arbol(int value, int color) {
         this.value = value;
-        left = rigth = null;
+        this.color = color;
+        left = right = null;
     }
 
     public int getValue() {
@@ -30,58 +30,82 @@ public class Arbol {
         this.left = left;
     }
 
-    public Arbol getRigth() {
-        return rigth;
+    public Arbol getRight() {
+        return right;
     }
 
-    public void setRigth(Arbol rigth) {
-        this.rigth = rigth;
+    public void setRight(Arbol rigth) {
+        this.right = rigth;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
     
-    public void push (int _value){
-        Arbol newBranch = new Arbol(_value);
+    public void push (Arbol tree, int _value){
+        Arbol newBranch = new Arbol(_value, 1);
         if (_value < value) {
             if (left == null) {
                 left = newBranch;
             } else {
-                left.push(_value);
+                left.push(tree, _value);
             }
-        } else {
-            if (rigth == null) {
-                rigth = newBranch;
+        } else if (_value > value){
+            if (right == null) {
+                right = newBranch;
             } else {
-                rigth.push(_value);
+                right.push(tree, _value);
             }
         }
+        //balanceTree(tree);
     }    
+    //imprimir forma del arbol
+    public int getAltura(Arbol node){
+        if (node == null) {
+            return 0;
+        }
+        int leftlevel = getAltura(node.left);
+        int rightlevel = getAltura(node.right);
+        if (leftlevel>rightlevel) {
+            return leftlevel+1;
+        }else{
+            return rightlevel+1;
+        }
+    }
     
-    public void imprimirArbol(Arbol tree){
-        levels = new String[6];
-        imprimirArbol(tree, 0);
+    public void imprimirArbol(Arbol node){
+        int altura = getAltura(node);
+        String[] levels = new String[altura];
+        imprimirArbol(node, 0, levels);
         for (int i = 0; i <levels.length; i++) {
             System.out.println(levels[i]+" NIVEL:"+i);
         }
     }
-    public void imprimirArbol(Arbol node, int level){
+    public void imprimirArbol(Arbol node, int level, String[] levels){
         if(node != null){
             levels[level] = node.getValue() + "  " + ((levels[level]!= null) ? levels[level] :"");
-            imprimirArbol(node.left, level + 1);
-            imprimirArbol(node.rigth, level + 1);
+            imprimirArbol(node.right, level + 1, levels);
+            imprimirArbol(node.left, level + 1, levels);
         }
 
     }
+    //imprimir ordenes
     public void preorder(Arbol node){
         if(node != null){
             System.out.println(node.getValue());
             preorder(node.left);
-            preorder(node.rigth);
+            preorder(node.right);
         }
 
     }
     public void postorder(Arbol node){
         if(node != null){
             postorder(node.left);
-            postorder(node.rigth);
+            postorder(node.right);
             System.out.println(node.getValue());
         }
     }
@@ -89,8 +113,46 @@ public class Arbol {
         if(node != null){
             inorder(node.left);
             System.out.println(node.getValue());
-            inorder(node.rigth);
+            inorder(node.right);
         }
     }
     
+    public void balanceTree(Arbol node){
+        if (isRed(right)&& !isRed(left)) {
+            node = node.leftRotate(node);
+        }
+        if (isRed(left)&& !isRed(left.left)) {
+            node = node.rightRotate(node);
+        }
+        if (isRed(left)&& !isRed(right)) {
+            colorFlip(node);
+        }
+    }
+    
+    public Arbol leftRotate(Arbol node){
+        Arbol newRoot = node.right;
+        node.right = newRoot.left;
+        newRoot.left = node;
+        node = newRoot;
+        return node;
+    }
+    public Arbol rightRotate(Arbol node){
+        Arbol newRoot = node.left;
+        node.left = newRoot.right;
+        newRoot.right = node;
+        node = newRoot;
+        return node;
+    }
+    public boolean isRed(Arbol node){
+        if(node.color == 1 || node == null ){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public void colorFlip(Arbol node){
+        node.color = 1;
+        node.left.color = 0;
+        node.right.color = 0;
+    }
 }
